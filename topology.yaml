@@ -1,0 +1,96 @@
+---
+# Two-subnet routed lab: 4 hosts + 1 Linux router
+network:
+  name: two-subnet-lab
+
+  subnets:
+    subnet-a:
+      cidr: 192.168.10.0/24
+      netmask: 255.255.255.0
+      gateway: 192.168.10.1        # router eth0
+    subnet-b:
+      cidr: 192.168.20.0/24
+      netmask: 255.255.255.0
+      gateway: 192.168.20.1        # router eth1
+
+  router:
+    name: router
+    ip_forwarding: true            # net.ipv4.ip_forward=1
+    interfaces:
+      - name: eth0
+        subnet: subnet-a
+        ip: 192.168.10.1
+        prefix_length: 24
+      - name: eth1
+        subnet: subnet-b
+        ip: 192.168.20.1
+        prefix_length: 24
+    routes:
+      # Directly connected networks (added automatically by the kernel)
+      - destination: 192.168.10.0/24
+        interface: eth0
+        scope: link
+      - destination: 192.168.20.0/24
+        interface: eth1
+        scope: link
+
+  hosts:
+    - name: host-a1
+      subnet: subnet-a
+      interfaces:
+        - name: eth0
+          ip: 192.168.10.10
+          prefix_length: 24
+          netmask: 255.255.255.0
+      routes:
+        - destination: 192.168.10.0/24
+          interface: eth0
+          scope: link
+        - destination: default       # 0.0.0.0/0
+          via: 192.168.10.1
+          interface: eth0
+
+    - name: host-a2
+      subnet: subnet-a
+      interfaces:
+        - name: eth0
+          ip: 192.168.10.11
+          prefix_length: 24
+          netmask: 255.255.255.0
+      routes:
+        - destination: 192.168.10.0/24
+          interface: eth0
+          scope: link
+        - destination: default
+          via: 192.168.10.1
+          interface: eth0
+
+    - name: host-b1
+      subnet: subnet-b
+      interfaces:
+        - name: eth0
+          ip: 192.168.20.10
+          prefix_length: 24
+          netmask: 255.255.255.0
+      routes:
+        - destination: 192.168.20.0/24
+          interface: eth0
+          scope: link
+        - destination: default
+          via: 192.168.20.1
+          interface: eth0
+
+    - name: host-b2
+      subnet: subnet-b
+      interfaces:
+        - name: eth0
+          ip: 192.168.20.11
+          prefix_length: 24
+          netmask: 255.255.255.0
+      routes:
+        - destination: 192.168.20.0/24
+          interface: eth0
+          scope: link
+        - destination: default
+          via: 192.168.20.1
+          interface: eth0
